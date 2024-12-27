@@ -9,7 +9,7 @@ import { Button } from "primereact/button";
 import ErrorBoundary from "./ErrorBoundary";
 
 function App() {
-  const [companies, setCompanies] = useState<any[]>([]);
+  const [companies,] = useState<any[]>([]);
   const [selectedCompanies, setSelectedCompanies] = useState<any[]>([]);
 
   useEffect(() => {}, []);
