@@ -1,12 +1,9 @@
-import { Handler } from "@netlify/functions";
-import puppeteer from "puppeteer-core"; // Use puppeteer-core for serverless environments
-import chromium from "chrome-aws-lambda"; // Puppeteer support for AWS Lambda
+import { Context } from "@netlify/functions";
+import puppeteer from "puppeteer-core";
 
-export const handler: Handler = async (event, context) => {
+export default async (request: Request, context: Context) => {
   // Parse query parameters
-  const params = new URLSearchParams(
-    (event.queryStringParameters as any) || {}
-  );
+  const params = new URLSearchParams((request.body as any) || {});
   const url = params.get("url");
   const verificationCode = params.get("verificationCode");
 
@@ -32,11 +29,7 @@ export const handler: Handler = async (event, context) => {
 
   try {
     // Launch Puppeteer in serverless environment
-    const browser = await puppeteer.launch({
-      args: chromium.args,
-      executablePath: await chromium.executablePath,
-      headless: chromium.headless,
-    });
+    const browser = await puppeteer.launch();
 
     const page = await browser.newPage();
     await page.goto(url, { waitUntil: "domcontentloaded" });
