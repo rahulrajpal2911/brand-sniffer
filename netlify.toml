@@ -2,8 +2,3 @@
   framework = "vite"
   command = "npm run dev"
   targetPort = 5173
-
-[production]
-  PUPPETEER_CACHE_DIR = "/opt/buildhome/.cache/puppeteer"
-  PUPPETEER_EXECUTABLE_PATH = "/opt/buildhome/.cache/puppeteer/chrome/linux-131.0.6778.204/chrome-linux64/chrome"
-  PUPPETEER_SKIP_CHROMIUM_DOWNLOAD = "true"
