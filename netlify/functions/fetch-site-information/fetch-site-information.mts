@@ -7,21 +7,33 @@ import { checkCompany, insertCompany } from "../../model/company";
 chromium.setHeadlessMode = true;
 chromium.setGraphicsMode = false;
 
-// Helper function for navigation with retries
-const navigateToPage = async (page: Page, url: string, retries = 3): Promise<void> => {
+// Helper function to handle navigation with retries
+const navigateToPage = async (browser: Browser, url: string, retries = 3): Promise<Page> => {
   for (let attempt = 1; attempt <= retries; attempt++) {
+    const page = await browser.newPage();
     try {
+      // Set user agent and headers to mimic real browser behavior
+      await page.setUserAgent(
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36"
+      );
+      await page.setExtraHTTPHeaders({ "Accept-Language": "en-US,en;q=0.9" });
+
+      // Navigate to the URL
       await page.goto(url, { waitUntil: "domcontentloaded", timeout: 60000 });
-      await page.waitForSelector("body", { timeout: 60000 }); // Wait for a stable element
-      return; // Navigation succeeded
+
+      // Wait for the body tag to ensure the page has loaded
+      await page.waitForSelector("body", { timeout: 60000 });
+      return page; // Navigation succeeded
     } catch (error) {
       console.error(`Attempt ${attempt} to navigate to ${url} failed:`, error);
+      await page.close();
       if (attempt === retries) throw error; // Throw error after max retries
     }
   }
+  throw new Error("Navigation failed after retries");
 };
 
-// Main Netlify function
+// Main function for Netlify
 export default async (request: Request, context: Context): Promise<Response> => {
   try {
     // Parse request and headers
@@ -33,10 +45,7 @@ export default async (request: Request, context: Context): Promise<Response> => 
     // Validate verification code
     if (verificationCode !== requestKey) {
       return new Response(
-        JSON.stringify({
-          message: "Unauthorized access.",
-          status: false,
-        }),
+        JSON.stringify({ message: "Unauthorized access.", status: false }),
         { status: 401 }
       );
     }
@@ -44,10 +53,7 @@ export default async (request: Request, context: Context): Promise<Response> => 
     // Validate URL
     if (!url || !/^https?:\/\/[^\s/$.?#].[^\s]*$/.test(url)) {
       return new Response(
-        JSON.stringify({
-          message: "Invalid URL parameter.",
-          status: false,
-        }),
+        JSON.stringify({ message: "Invalid URL parameter.", status: false }),
         { status: 400 }
       );
     }
@@ -55,23 +61,21 @@ export default async (request: Request, context: Context): Promise<Response> => 
     // Get Chromium executable path
     const chromiumPath = await chromium.executablePath();
     if (!chromiumPath) {
-      throw new Error("Chromium executable path is not found.");
+      throw new Error("Chromium executable path not found.");
     }
 
-    console.log("Puppeteer Path:", chromiumPath);
+    console.log("Chromium Path:", chromiumPath);
 
     // Launch Puppeteer
     const browser: Browser = await puppeteer.launch({
-      args: chromium.args,
+      args: [...chromium.args, "--disable-dev-shm-usage"],
       defaultViewport: chromium.defaultViewport,
       executablePath: chromiumPath,
       headless: chromium.headless,
     });
 
-    const page: Page = await browser.newPage();
-
-    // Navigate to the page with retry logic
-    await navigateToPage(page, url);
+    // Navigate to the page
+    const page: Page = await navigateToPage(browser, url);
 
     // Scrape data
     const pageData = await page.evaluate(() => {
@@ -144,6 +148,7 @@ export default async (request: Request, context: Context): Promise<Response> => 
       };
     });
 
+    await page.close();
     await browser.close();
 
     // Check if the company already exists
@@ -152,10 +157,7 @@ export default async (request: Request, context: Context): Promise<Response> => 
 
     if (exists) {
       return new Response(
-        JSON.stringify({
-          status: false,
-          message: "Company already exists!",
-        }),
+        JSON.stringify({ status: false, message: "Company already exists!" }),
         { status: 409 }
       );
     }
@@ -188,10 +190,7 @@ export default async (request: Request, context: Context): Promise<Response> => 
   } catch (error) {
     console.error("Error scraping the website:", error);
     return new Response(
-      JSON.stringify({
-        status: false,
-        message: "Failed to scrape the website!",
-      }),
+      JSON.stringify({ status: false, message: "Failed to scrape the website!" }),
       { status: 500 }
     );
   }
