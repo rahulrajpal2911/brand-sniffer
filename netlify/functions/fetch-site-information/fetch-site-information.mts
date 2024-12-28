@@ -1,53 +1,77 @@
-import { Context, HandlerEvent } from "@netlify/functions";
+import { Context } from "@netlify/functions";
 import chromium from "@sparticuz/chromium";
-import puppeteer from 'puppeteer-core';
+import puppeteer, { Browser, Page } from "puppeteer-core";
 import { checkCompany, insertCompany } from "../../model/company";
 
+// Set Chromium configuration for serverless environments
 chromium.setHeadlessMode = true;
 chromium.setGraphicsMode = false;
 
-export default async (request: Request, context: Context) => {
-  // Parse query parameters
-  const requestKey = request.headers.get('x-verification-code');
-  const verificationCode = Netlify.env.get("VERIFICATION_CODE");
-  const body = await new Response(request.body).json();
-  const url = body!.url;
-
-  // Check verification code
-  if (verificationCode !== requestKey) {
-    return new Response(JSON.stringify({
-      message: "Unauthorized access.",
-      status: false,
-    }));
+// Helper function for navigation with retries
+const navigateToPage = async (page: Page, url: string, retries = 3): Promise<void> => {
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      await page.goto(url, { waitUntil: "domcontentloaded", timeout: 60000 });
+      await page.waitForSelector("body", { timeout: 60000 }); // Wait for a stable element
+      return; // Navigation succeeded
+    } catch (error) {
+      console.error(`Attempt ${attempt} to navigate to ${url} failed:`, error);
+      if (attempt === retries) throw error; // Throw error after max retries
+    }
   }
+};
 
-  // Validate the URL parameter
-  if (
-    !url ||
-    typeof url !== "string" ||
-    !/^https?:\/\/[^\s/$.?#].[^\s]*$/.test(url)
-  ) {
-    return new Response(JSON.stringify({
-      message: "Invalid URL parameter.",
-      status: false,
-    }));
-  }
-
-  const chromiumPath = await chromium.executablePath();
-
-  console.log('Puppeteer Path', chromiumPath);
-
+// Main Netlify function
+export default async (request: Request, context: Context): Promise<Response> => {
   try {
-    // Launch Puppeteer in serverless environment
-    const browser = await puppeteer.launch({
+    // Parse request and headers
+    const requestKey = request.headers.get("x-verification-code");
+    const verificationCode = process.env.VERIFICATION_CODE || "";
+    const body = await request.json();
+    const url: string = body?.url;
+
+    // Validate verification code
+    if (verificationCode !== requestKey) {
+      return new Response(
+        JSON.stringify({
+          message: "Unauthorized access.",
+          status: false,
+        }),
+        { status: 401 }
+      );
+    }
+
+    // Validate URL
+    if (!url || !/^https?:\/\/[^\s/$.?#].[^\s]*$/.test(url)) {
+      return new Response(
+        JSON.stringify({
+          message: "Invalid URL parameter.",
+          status: false,
+        }),
+        { status: 400 }
+      );
+    }
+
+    // Get Chromium executable path
+    const chromiumPath = await chromium.executablePath();
+    if (!chromiumPath) {
+      throw new Error("Chromium executable path is not found.");
+    }
+
+    console.log("Puppeteer Path:", chromiumPath);
+
+    // Launch Puppeteer
+    const browser: Browser = await puppeteer.launch({
       args: chromium.args,
       defaultViewport: chromium.defaultViewport,
       executablePath: chromiumPath,
       headless: chromium.headless,
     });
 
-    const page = await browser.newPage();
-    await page.goto(url, { waitUntil: "domcontentloaded" });
+    const page: Page = await browser.newPage();
+
+    // Navigate to the page with retry logic
+    await navigateToPage(page, url);
 
     // Scrape data
     const pageData = await page.evaluate(() => {
@@ -57,17 +81,15 @@ export default async (request: Request, context: Context) => {
           ?.getAttribute("content") || "";
       const title = document.querySelector("title")?.innerText || "";
 
-      const getAddress = () => {
+      const getAddress = (): string => {
         const addressElement = Array.from(
           document.querySelectorAll("p") || []
         ).find((p) => p.textContent?.toLowerCase().includes("address"));
         return addressElement?.textContent?.trim() || "";
       };
 
-
       const companyLogo =
-        document.querySelector('link[rel="icon"]')?.getAttribute("href") ||
-        "";
+        document.querySelector('link[rel="icon"]')?.getAttribute("href") || "";
       const companyName = ogSiteName || title || "";
       const description =
         document
@@ -106,25 +128,71 @@ export default async (request: Request, context: Context) => {
           .querySelector("a[href*='instagram.com']")
           ?.getAttribute("href") || "";
 
-      return { companyLogo, companyName, description, address, phoneNumber, emailAddress, websiteUrl, facebookLink, twitterLink, linkedInUrl, youtubeLink, instagramLink };
+      return {
+        companyLogo,
+        companyName,
+        description,
+        address,
+        phoneNumber,
+        emailAddress,
+        websiteUrl,
+        facebookLink,
+        twitterLink,
+        linkedInUrl,
+        youtubeLink,
+        instagramLink,
+      };
     });
 
     await browser.close();
 
+    // Check if the company already exists
     const websiteUrl = pageData.websiteUrl;
-
     const exists = await checkCompany(websiteUrl);
+
     if (exists) {
-      return new Response(JSON.stringify({ status: false, message: 'Company name already exist!' }));
+      return new Response(
+        JSON.stringify({
+          status: false,
+          message: "Company already exists!",
+        }),
+        { status: 409 }
+      );
     }
 
-    // Usage example
-    const id = await insertCompany(pageData.companyLogo, pageData.companyName, pageData.description, pageData.address, pageData.phoneNumber, pageData.emailAddress, pageData.websiteUrl, pageData.facebookLink, pageData.twitterLink, pageData.linkedInUrl, pageData.youtubeLink, pageData.instagramLink);
+    // Insert the company data
+    const id = await insertCompany(
+      pageData.companyLogo,
+      pageData.companyName,
+      pageData.description,
+      pageData.address,
+      pageData.phoneNumber,
+      pageData.emailAddress,
+      pageData.websiteUrl,
+      pageData.facebookLink,
+      pageData.twitterLink,
+      pageData.linkedInUrl,
+      pageData.youtubeLink,
+      pageData.instagramLink
+    );
 
-    // Return the scraped data
-    return new Response(JSON.stringify({ status: true, message: 'Company information saved successfully!', id: id }));
+    // Return success response
+    return new Response(
+      JSON.stringify({
+        status: true,
+        message: "Company information saved successfully!",
+        id: id,
+      }),
+      { status: 201 }
+    );
   } catch (error) {
     console.error("Error scraping the website:", error);
-    return new Response(JSON.stringify({ status: false, message: 'Failed to scrape the website!' }));
+    return new Response(
+      JSON.stringify({
+        status: false,
+        message: "Failed to scrape the website!",
+      }),
+      { status: 500 }
+    );
   }
 };
