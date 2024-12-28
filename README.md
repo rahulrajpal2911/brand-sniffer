@@ -1,4 +1,4 @@
-# Web App with Puppeteer and MySQL Integration
+# Brand Sniffer: Web App with Puppeteer and MySQL Integration
 
 This is a web application that allows users to input a URL, which is then processed by a backend serverless function (Netlify Function) to scrape data using **Puppeteer** and store it in a **MySQL database**. The app is built with **React**, **PrimeReact**, and **TypeScript**, leveraging **Netlify Functions** for backend operations.
 
