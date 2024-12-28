@@ -1,5 +1,5 @@
 import { Context, HandlerEvent } from "@netlify/functions";
-import puppeteer from "puppeteer-core";
+import puppeteer from "puppeteer";
 import { checkCompany, insertCompany } from "../../model/company";
 
 export default async (request: Request, context: Context) => {
