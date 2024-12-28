@@ -170,6 +170,12 @@ The app will be available at `http://localhost:5173/`.
 
 ---
 
+## Link to Figma
+
+(https://www.figma.com/design/cKLKqua0UnLyqIe3UWTqiv/Company-Details---Skill-Test?node-id=2-1633&t=NjHaoxQRNIPsNtFi-0)
+
+---
+
 ## Folder Structure
 
 ```
@@ -203,7 +209,3 @@ vite.config.ts            # Vite configuration
 ## License
 
 This project is licensed under the MIT License.
-
----
-
-Let me know if there are additional details you'd like to include! 😊
