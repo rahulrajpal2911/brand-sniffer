@@ -1,6 +1,10 @@
 import { Context, HandlerEvent } from "@netlify/functions";
-import puppeteer from "puppeteer";
+import chromium from "@sparticuz/chromium";
+import puppeteer from 'puppeteer-core';
 import { checkCompany, insertCompany } from "../../model/company";
+
+chromium.setHeadlessMode = true;
+chromium.setGraphicsMode = false;
 
 export default async (request: Request, context: Context) => {
   // Parse query parameters
@@ -29,10 +33,17 @@ export default async (request: Request, context: Context) => {
     }));
   }
 
+  const chromiumPath = await chromium.executablePath();
+
+  console.log('Puppeteer Path', chromiumPath);
+
   try {
     // Launch Puppeteer in serverless environment
     const browser = await puppeteer.launch({
-      executablePath: "/opt/buildhome/.cache/puppeteer/chrome/linux-131.0.6778.204/chrome-linux64/chrome"
+      args: chromium.args,
+      defaultViewport: chromium.defaultViewport,
+      executablePath: chromiumPath,
+      headless: chromium.headless,
     });
 
     const page = await browser.newPage();

@@ -4,7 +4,6 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "postinstall": "npx puppeteer browsers install chrome",
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
@@ -12,13 +11,14 @@
   },
   "dependencies": {
     "@netlify/functions": "^2.8.2",
+    "@sparticuz/chromium": "113.0.1",
     "axios": "^1.7.9",
     "file-saver": "^2.0.5",
     "mysql2": "^3.12.0",
     "primeflex": "^3.3.1",
     "primeicons": "^7.0.0",
     "primereact": "^10.8.5",
-    "puppeteer": "23.11.1",
+    "puppeteer-core": "20.1.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "xlsx": "^0.18.5"
