@@ -6,5 +6,3 @@
 [functions]
   node_bundler = "esbuild"
   external_node_modules = ["@sparticuz/chromium"]
-  memory = 1024
-  timeout = 10
