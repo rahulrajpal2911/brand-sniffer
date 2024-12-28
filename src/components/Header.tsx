@@ -6,66 +6,71 @@ import { InputIcon } from "primereact/inputicon";
 import { InputText } from "primereact/inputtext";
 import { Button } from "primereact/button";
 import { useRef, useState } from "react";
+import axios from "axios";
+import { isValidUrl, showToast } from "../utils/helper";
 
-const Header = () => {
+const Header: React.FC<{ triggerFetch: () => void }> = ({ triggerFetch }) => {
   const [url, setUrl] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(false);
   const toast = useRef<Toast>(null);
 
-  const showToast = (
-    message: string,
-    severity: "info" | "success" | "warn" | "error"
-  ) => {
-    if (!toast.current) return;
-    toast.current.show({
-      severity,
-      summary: severity.toUpperCase(),
-      detail: message,
-    });
-  };
-
-  const isValidUrl = (url: string): boolean => {
-    return /^(https?:\/\/)?([\w-]+(\.[\w-]+)+)(:\d+)?(\/[\w-]*)*$/i.test(url);
-  };
-
   const fetchCompanyDetails = async (url: string) => {
-    const response = await fetch(
-      `/.netlify/functions/scrape?url=${encodeURIComponent(
-        url
-      )}&verificationCode=${process.env.REACT_APP_VERIFICATION_CODE}`
-    );
-    if (!response.ok) {
-      throw new Error("Failed to fetch company details.");
+    const verificationCode = import.meta.env.VITE_VERIFICATION_CODE;
+    try {
+      const response = await axios.post(
+        `/.netlify/functions/fetch-site-information`,
+        {
+          url: url,
+        },
+        {
+          headers: {
+            "x-verification-code": verificationCode,
+          },
+        }
+      );
+      if (!response.data) {
+        return false;
+      }
+      return response.data;
+    } catch (error: any) {
+      showToast(
+        toast,
+        error.message || "Error fetching website data.",
+        "error"
+      );
+      return false;
     }
-    return response.json();
   };
 
   const handleFetchAndSave = async () => {
     if (!url) {
-      showToast("URL is not defined.", "warn");
+      showToast(toast, "URL is not defined.", "warn");
       return;
     }
 
     if (!isValidUrl(url)) {
-      showToast("Please enter a valid URL!", "warn");
+      showToast(toast, "Please enter a valid URL!", "warn");
       return;
     }
 
     try {
+      setLoading(true);
       const result = await fetchCompanyDetails(url);
-      console.log("Fetched Data:", result);
-
-      // Simulate storing data
-      try {
-        // await client.models.Company.create(result);
-        showToast("Company information stored successfully!", "success");
-      } catch (error: any) {
-        showToast(
-          error.message || "Error storing company information.",
-          "error"
-        );
+      if (!result.status) {
+        showToast(toast, result.message, "error");
+      } else {
+        setUrl('');
+        triggerFetch();
+        showToast(toast, result.message, "success");
       }
     } catch (error: any) {
-      showToast(error.message || "Error fetching website data.", "error");
+      showToast(
+        toast,
+        error.message || "Error fetching website data.",
+        "error"
+      );
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -78,23 +83,26 @@ const Header = () => {
           alignItems: "center",
           gap: "1rem",
           padding: "1rem",
+          background: "#ffffff",
         }}
       >
         <IconField iconPosition="left">
-          <InputIcon className="pi pi-search"> </InputIcon>
+          <InputIcon className="pi pi-search input-fetch-icon"> </InputIcon>
           <InputText
+            className="url-input"
             type="url"
+            disabled={loading}
             value={url}
             onChange={(e) => setUrl(e.target.value)}
             placeholder="Enter domain name"
-            style={{ width: "300px" }}
           />
         </IconField>
 
         <Button
-          label="Fetch & Save Details"
+          disabled={loading}
+          label={loading ? "Fetching..." : "Fetch & Save Details"}
           onClick={handleFetchAndSave}
-          className="p-button-primary"
+          className="fetch-btn"
         />
       </div>
     </>

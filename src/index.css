@@ -2,3 +2,169 @@
 @import "primereact/resources/primereact.min.css";
 @import "primeicons/primeicons.css";
 @import "primeflex/primeflex.css";
+
+.p-datatable .p-datatable-tbody > tr > td,
+.p-datatable .p-datatable-thead > tr > th {
+  font-size: 12.6px;
+}
+
+.p-datatable .p-datatable-thead > tr > th {
+  padding: 14px;
+  background-color: #f9fafb;
+}
+
+.p-datatable .p-datatable-thead > tr > th .p-column-title {
+  color: #6b7280;
+}
+
+.p-datatable .p-datatable-header {
+  background: #ffffff;
+}
+
+.p-datatable .p-datatable-header button {
+  background: #ececec;
+  border-color: #ececec;
+  color: #a2a2a2;
+}
+
+.p-datatable .p-datatable-tbody {
+  min-height: 500px;
+}
+
+.deleteBtn {
+  height: 38px;
+  width: 140px;
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: 3px;
+  padding: 5px 10px 5px 10px;
+}
+
+.exportBtn {
+  height: 38px;
+  width: 135px;
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: 3px;
+  padding: 5px 10px 5px 10px;
+}
+
+.totalCompanies {
+  color: #334155;
+  font-weight: 500;
+  font-size: 12px;
+  margin-top: 10px;
+  width: 100px;
+}
+
+.input-fetch-icon {
+  width: 18px;
+  height: 18px;
+  color: #6b7280;
+}
+
+.url-input {
+  outline: none;
+  border-radius: 8px;
+  width: 404px;
+  height: 38px;
+  padding-top: 8px;
+  padding-right: 16px;
+  padding-bottom: 8px;
+  padding-left: 34px;
+  background: #f9fafb;
+  font-size: 14px;
+  color: #6b7280;
+  border-color: #e5e7eb;
+}
+
+.url-input:focus {
+  box-shadow: none;
+}
+
+.fetch-btn {
+  background: #ede5ff;
+  border-radius: 5px;
+  width: 167px;
+  height: 37px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  padding-left: 15px;
+  padding-right: 15px;
+  border: none;
+}
+
+.fetch-btn .p-button-label {
+  color: #6c2bd9;
+  font-size: 14px;
+}
+
+/* Set the font size for the paginator */
+.p-paginator .p-paginator-pages .p-paginator-page {
+  font-size: 12px; /* Adjust the font size */
+  color: #6c757d; /* Text color */
+  margin: 0 2px; /* Adjust spacing between page links */
+}
+
+/* Active page styling */
+.p-paginator .p-paginator-pages .p-paginator-page.p-highlight {
+  font-weight: bold;
+  color: #6f32be; /* Purple for active page */
+  border: none; /* Remove border for active page */
+}
+
+/* Previous and Next button styling */
+.p-paginator .p-paginator-first,
+.p-paginator .p-paginator-prev,
+.p-paginator .p-paginator-next,
+.p-paginator .p-paginator-last {
+  font-size: 12px; /* Match font size */
+  color: #6c757d; /* Same color as other links */
+}
+
+/* Disable color for unclickable Previous/Next buttons */
+.p-paginator .p-disabled {
+  color: #d3d3d3; /* Lighter gray for disabled buttons */
+}
+
+/* "Showing X-Y of Z" text styling */
+.p-paginator-current {
+  font-size: 12px;
+  color: #495057;
+  font-weight: 500;
+}
+
+/* Set the font size for the paginator */
+.p-paginator .p-paginator-pages .p-paginator-page {
+  font-size: 12px; /* Adjust the font size */
+  color: #6c757d; /* Text color */
+  margin: 0 2px; /* Adjust spacing between page links */
+}
+
+/* Active page styling */
+.p-paginator .p-paginator-pages .p-paginator-page.p-highlight {
+  font-weight: bold;
+  color: #6f32be; /* Purple for active page */
+  border: none; /* Remove border for active page */
+}
+
+/* Previous and Next button styling */
+.p-paginator .p-paginator-first,
+.p-paginator .p-paginator-prev,
+.p-paginator .p-paginator-next,
+.p-paginator .p-paginator-last {
+  font-size: 12px; /* Match font size */
+  color: #6c757d; /* Same color as other links */
+}
+
+/* Disable color for unclickable Previous/Next buttons */
+.p-paginator .p-disabled {
+  color: #d3d3d3; /* Lighter gray for disabled buttons */
+}
+
+/* "Showing X-Y of Z" text styling */
+.p-paginator-current {
+  font-size: 12px;
+  color: #495057;
+  font-weight: 500;
+}

@@ -11,15 +11,21 @@
   },
   "dependencies": {
     "@netlify/functions": "^2.8.2",
+    "axios": "^1.7.9",
+    "file-saver": "^2.0.5",
+    "mysql2": "^3.12.0",
     "primeflex": "^3.3.1",
     "primeicons": "^7.0.0",
     "primereact": "^10.8.5",
+    "puppeteer": "^23.11.1",
     "puppeteer-core": "^23.11.1",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@eslint/js": "^9.17.0",
+    "@types/file-saver": "^2.0.7",
     "@types/node": "^22.10.2",
     "@types/react": "^18.3.18",
     "@types/react-dom": "^18.3.5",

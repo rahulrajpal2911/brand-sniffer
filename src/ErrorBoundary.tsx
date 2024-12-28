@@ -33,21 +33,54 @@ class ErrorBoundary extends React.Component<
 
   render() {
     if (this.state.hasError) {
-      // Render fallback UI if provided, otherwise a default message
-      return this.props.fallback ? (
-        this.props.fallback
-      ) : (
-        <div>
-          <h1>Something went wrong.</h1>
-          <details style={{ whiteSpace: "pre-wrap" }}>
-            {this.state.error && this.state.error.toString()}
-            <br />
-            {this.state.errorInfo?.componentStack}
-          </details>
+      return (
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            height: "100vh",
+            textAlign: "center",
+            color: "#333",
+            fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+          }}
+        >
+          <div
+            style={{
+              maxWidth: "600px",
+              padding: "20px",
+              border: "1px solid #ddd",
+              borderRadius: "10px",
+              backgroundColor: "#f9f9f9",
+              boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
+            }}
+          >
+            <h1 style={{ fontSize: "2rem", color: "#e74c3c" }}>
+              Oops! Something went wrong.
+            </h1>
+            <p style={{ marginTop: "10px", fontSize: "1rem", color: "#555" }}>
+              An unexpected error occurred. Please try again or contact support
+              if the issue persists.
+            </p>
+            <details
+              style={{
+                marginTop: "15px",
+                whiteSpace: "pre-wrap",
+                backgroundColor: "#f1f1f1",
+                padding: "10px",
+                borderRadius: "5px",
+                color: "#444",
+              }}
+            >
+              {this.state.error && this.state.error.toString()}
+              <br />
+              {this.state.errorInfo?.componentStack}
+            </details>
+          </div>
         </div>
       );
     }
-
     return this.props.children;
   }
 }
