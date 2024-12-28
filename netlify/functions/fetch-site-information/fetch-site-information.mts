@@ -31,10 +31,7 @@ export default async (request: Request, context: Context) => {
 
   try {
     // Launch Puppeteer in serverless environment
-    const browser = await puppeteer.launch({
-      executablePath: '/opt/buildhome/.cache/puppeteer/chrome/linux-131.0.6778.204/chrome-linux64/chrome',
-      headless: true,
-    });
+    const browser = await puppeteer.launch();
 
     const page = await browser.newPage();
     await page.goto(url, { waitUntil: "domcontentloaded" });
