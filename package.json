@@ -4,6 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "postinstall": "npx puppeteer browsers install chrome",
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
@@ -11,7 +12,6 @@
   },
   "dependencies": {
     "@netlify/functions": "^2.8.2",
-    "@sparticuz/chromium": "113.0.1",
     "axios": "^1.7.9",
     "file-saver": "^2.0.5",
     "mysql2": "^3.12.0",
