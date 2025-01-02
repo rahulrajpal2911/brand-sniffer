@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from "react";
 import { PrimeReactProvider } from "primereact/api";
 import Header from "./components/Header";
@@ -11,7 +9,7 @@ function App() {
   const [fetchTrigger, setFetchTrigger] = useState(false);
 
   const triggerFetchCompanyDetails = () => {
-    setFetchTrigger(true); // Trigger fetch in Home
+    setFetchTrigger(fetchTrigger ? false : true); // Trigger fetch in Home
   };
 
   const handleFetchComplete = () => {
@@ -27,7 +25,7 @@ function App() {
               <Header triggerFetch={triggerFetchCompanyDetails} />
               <Home
                 triggerFetchCompany={fetchTrigger}
-                onFetch={handleFetchComplete}
+                onFetchData={handleFetchComplete}
               />
             </div>
           </ToastProvider>

@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Toast } from "primereact/toast";
 import { IconField } from "primereact/iconfield";
 import { InputIcon } from "primereact/inputicon";
@@ -8,6 +6,7 @@ import { Button } from "primereact/button";
 import { useRef, useState } from "react";
 import axios from "axios";
 import { isValidUrl, showToast } from "../utils/helper";
+import { ErrorException } from "../interfaces/CompanyDetail.interface";
 
 const Header: React.FC<{ triggerFetch: () => void }> = ({ triggerFetch }) => {
   const [url, setUrl] = useState<string>("");
@@ -32,13 +31,9 @@ const Header: React.FC<{ triggerFetch: () => void }> = ({ triggerFetch }) => {
         return false;
       }
       return response.data;
-    } catch (error: any) {
-      showToast(
-        toast,
-        error.message || "Error fetching website data.",
-        "error"
-      );
-      return false;
+    } catch (error: unknown) {
+      console.log("Scrapping error", (error as ErrorException).message);
+      throw error;
     }
   };
 
@@ -46,9 +41,7 @@ const Header: React.FC<{ triggerFetch: () => void }> = ({ triggerFetch }) => {
     if (!url) {
       showToast(toast, "URL is not defined.", "warn");
       return;
-    }
-
-    if (!isValidUrl(url)) {
+    } else if (!isValidUrl(url)) {
       showToast(toast, "Please enter a valid URL!", "warn");
       return;
     }
@@ -59,14 +52,14 @@ const Header: React.FC<{ triggerFetch: () => void }> = ({ triggerFetch }) => {
       if (!result.status) {
         showToast(toast, result.message, "error");
       } else {
-        setUrl('');
+        setUrl("");
         triggerFetch();
         showToast(toast, result.message, "success");
       }
-    } catch (error: any) {
+    } catch (error) {
       showToast(
         toast,
-        error.message || "Error fetching website data.",
+        (error as ErrorException).message || "Error fetching website data.",
         "error"
       );
     } finally {

@@ -1,55 +1,33 @@
-import axios from "axios";
 import { Button } from "primereact/button";
-import { useState, useEffect } from "react";
-import { useToast } from "./utils/ToastContent";
+import { useState, useEffect, useCallback } from "react";
 import { Column } from "primereact/column";
 import { DataTable } from "primereact/datatable";
 import { CompanyInformation } from "./interfaces/CompanyDetail.interface";
+import { getCompanyRecords } from "./services/GetCompanyRecords";
 
-const Home: React.FC<{ triggerFetchCompany: boolean; onFetch: () => void }> = ({
-  triggerFetchCompany,
-  onFetch,
-}) => {
-  const { showToast } = useToast();
+const Home: React.FC<{
+  triggerFetchCompany: boolean;
+  onFetchData: () => void;
+}> = ({ triggerFetchCompany, onFetchData }) => {
   const [companies, setCompanies] = useState<CompanyInformation[]>([]);
   const [selectedCompanies, setSelectedCompanies] = useState<
     CompanyInformation[]
   >([]);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState<boolean>(false);
+
+  const fetchCompanyDetails = useCallback(async () => {
+    setLoading(true);
+    const data = await getCompanyRecords();
+    setCompanies(data);
+    setLoading(false);
+    onFetchData(); // Notify parent fetch is complete
+  }, [onFetchData]);
 
   useEffect(() => {
-    fetchCompanyDetails();
-  }, [triggerFetchCompany, onFetch]);
-
-  const fetchCompanyDetails = async () => {
-    setLoading(true);
-    const verificationCode = import.meta.env.VITE_VERIFICATION_CODE;
-    try {
-      const response = await axios.post(
-        `/.netlify/functions/get-companies`,
-        {},
-        {
-          headers: {
-            "x-verification-code": verificationCode,
-          },
-        }
-      );
-      if (!response.data) {
-        return false;
-      }
-      setCompanies(response.data);
-      return response.data as CompanyInformation;
-    } catch (error: any) {
-      showToast({
-        severity: "error",
-        summary: "Error",
-        detail: error.message || "Error fetching website data.",
-      });
-      return false;
-    } finally {
-      setLoading(false);
+    if (triggerFetchCompany) {
+      fetchCompanyDetails();
     }
-  };
+  }, [triggerFetchCompany, fetchCompanyDetails]);
 
   const exportExcel = () => {
     import("xlsx").then((xlsx) => {
@@ -67,9 +45,9 @@ const Home: React.FC<{ triggerFetchCompany: boolean; onFetch: () => void }> = ({
   const saveAsExcelFile = (buffer: string, fileName: string) => {
     import("file-saver").then((module) => {
       if (module && module.default) {
-        let EXCEL_TYPE =
+        const EXCEL_TYPE =
           "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8";
-        let EXCEL_EXTENSION = ".xlsx";
+        const EXCEL_EXTENSION = ".xlsx";
         const data = new Blob([buffer], {
           type: EXCEL_TYPE,
         });
