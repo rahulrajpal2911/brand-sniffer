@@ -97,6 +97,12 @@ const Header: React.FC<{ triggerFetch: () => void }> = ({ triggerFetch }) => {
           onClick={handleFetchAndSave}
           className="fetch-btn"
         />
+        <Button
+          disabled={loading}
+          label={loading ? "Refreshing..." : "Refresh"}
+          onClick={triggerFetch}
+          className="fetch-btn"
+        />
       </div>
     </>
   );
